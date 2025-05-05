@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Simulador de Cofre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px;
+        }
+
+        #cofre-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+
+        /* Display */
+        #display {
+            font-size: 2rem;
+            width: 200px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+
+        /* Classes para cores do display */
+        .display-normal {
+            background-color: #ccc;
+            color: #000;
+        }
+
+        .display-green {
+            background-color: rgb(0, 241, 0);
+            color: #000000;
+        }
+
+        .display-red {
+            background-color: #f00;
+            color: #fff;
+        }
+
+        /* Teclado numérico */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .keypad button {
+            font-size: 1.2rem;
+            padding: 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+        }
+
+        /* Botão de alarme */
+        #alarm-toggle {
+            padding: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        /* Desabilitar botões ao alarme disparar */
+        .disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="cofre-container">
+        <h1>Simulador de Cofre</h1>
+
+        <!-- Botão para ativar/desativar o alarme -->
+        <button id="alarm-toggle">Alarme: DESLIGADO</button>
+
+        <!-- Display de 4 dígitos -->
+        <div id="display" class="display-normal">----</div>
+
+        <!-- Teclado numérico -->
+        <div class="keypad" id="keypad">
+            <button onclick="digitar(1)">1</button>
+            <button onclick="digitar(2)">2</button>
+            <button onclick="digitar(3)">3</button>
+            <button onclick="digitar(4)">4</button>
+            <button onclick="digitar(5)">5</button>
+            <button onclick="digitar(6)">6</button>
+            <button onclick="digitar(7)">7</button>
+            <button onclick="digitar(8)">8</button>
+            <button onclick="digitar(9)">9</button>
+            <button onclick="limpar()">Limpar</button>
+            <button onclick="digitar(0)">0</button>
+            <button onclick="cancelar()">Cancelar</button>
+        </div>
+
+        <!-- Botão Enter -->
+        <button onclick="verificarSenha()" id="enter-button">ENTER</button>
+
+    </div>
+
+    <script>
+        let senhaCorreta = gerarSenhaAleatoria();
+        let senhaDigitada = "";
+        let alarmeAtivado = false;
+    
+        console.log("Senha gerada:", senhaCorreta);
+    
+        function gerarSenhaAleatoria() {
+            return "1234";
+        }
+    
+        function digitar(numero) {
+            if (senhaDigitada.length < 4) {
+                senhaDigitada += numero.toString();
+                atualizarDisplay();
+            }
+        }
+    
+        function atualizarDisplay() {
+            const display = document.getElementById("display");
+            display.className = "display-normal";
+            let visivel = senhaDigitada.padEnd(4, "-");
+            display.textContent = visivel;
+        }
+    
+        function limpar() {
+            senhaDigitada = "";
+            atualizarDisplay();
+        }
+    
+        function cancelar() {
+            senhaDigitada = "";
+            atualizarDisplay();
+        }
+    
+        function verificarSenha() {
+            const display = document.getElementById("display");
+            if (senhaDigitada === senhaCorreta) {
+                display.className = "display-green";
+            } else {
+                display.className = "display-red";
+                display.textContent = senhaDigitada;
+    
+                if (alarmeAtivado) {
+                    desativarBotoes(true);
+                    removerSuporteTeclado();
+                }
+            }
+        }
+    
+        document.getElementById("alarm-toggle").addEventListener("click", function () {
+            alarmeAtivado = !alarmeAtivado;
+            this.textContent = "Alarme: " + (alarmeAtivado ? "LIGADO" : "DESLIGADO");
+    
+            if (alarmeAtivado) {
+                adicionarSuporteTeclado();
+            } else {
+                removerSuporteTeclado();
+            }
+        });
+    
+        function desativarBotoes(desativar) {
+            const botoes = document.querySelectorAll("button");
+            botoes.forEach(btn => {
+                if (btn.id !== "alarm-toggle") {
+                    if (desativar) {
+                        btn.classList.add("disabled");
+                    } else {
+                        btn.classList.remove("disabled");
+                    }
+                }
+            });
+        }
+    
+        function handleTeclado(event) {
+            if (!alarmeAtivado) return;
+    
+            const tecla = event.key;
+    
+            if (/^[0-9]$/.test(tecla)) {
+                digitar(tecla);
+            } else if (tecla === "Backspace") {
+                senhaDigitada = senhaDigitada.slice(0, -1);
+                atualizarDisplay();
+            } else if (tecla === "Enter") {
+                verificarSenha();
+            }
+        }
+    
+        function adicionarSuporteTeclado() {
+            document.addEventListener("keydown", handleTeclado);
+        }
+    
+        function removerSuporteTeclado() {
+            document.removeEventListener("keydown", handleTeclado);
+        }
+    
+        atualizarDisplay();
+    </script>
+    
+</body>
+
+</html>
